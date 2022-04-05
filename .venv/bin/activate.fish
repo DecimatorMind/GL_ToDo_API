@@ -29,7 +29,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/pranjalbhardwaj/Downloads/Development/GL/.venv"
+set -gx VIRTUAL_ENV "/Users/pranjalbhardwaj/Downloads/Development/GL_ToDo_API/.venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

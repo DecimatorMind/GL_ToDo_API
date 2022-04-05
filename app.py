@@ -16,7 +16,6 @@ class Users(db.Model):
     name = db.Column(db.String)
     email = db.Column(db.String,unique = True)
     password = db.Column(db.String)
-    token = db.Column(db.String,unique = True,nullable = False)
 
 class Tasks(db.Model):
     id = db.Column(db.Integer,primary_key = True)
@@ -52,8 +51,7 @@ def home():
 @app.route("/register",methods = ["POST"])
 def register():
     data = request.get_json()
-    token = jwt.encode({"email" : data["email"],"password" : data["password"]},secret_key, "HS256")
-    new_user = Users(id = data["id"],name = data["name"],email = data["email"],password = data["password"],token = token)
+    new_user = Users(name = data["name"],email = data["email"],password = data["password"])
     db.session.add(new_user)
     try:
         db.session.commit()
@@ -90,7 +88,7 @@ def login():
     user = Users.query.filter_by(email = email).first()
     if(user != None):
         if(user.password == password):
-            token = jwt.encode({'public_id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, secret_key, "HS256")
+            token = jwt.encode({'public_id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
             return jsonify({'token' : token})
         else:
             return jsonify({'status': 'Wrong password entered'})
@@ -124,19 +122,19 @@ def tasks():
                 json = request.get_json()
                 if(json['user_id'] != userId):
                     return jsonify({'error' : 'Access Not Allowed'})
-                task = Tasks(id = json['id'],task = json['task'],user_id = json['user_id'],completed = json['completed'])
+                task = Tasks(task = json['task'],user_id = json['user_id'],completed = json['completed'])
                 db.session.add(task)
                 try:
                     db.session.commit()
-                    return "Successfully Added to Database"
+                    return jsonify({"status":"Successfully Added to Database"})
                 except:
                     db.session.rollback()
-                    return "Error in adding task to Database"
+                    return jsonify({"status":"Error in adding task to Database"})
                 finally:
                     db.session.close()
-                    return "Request Recieved"
+                    return jsonify({"status":"Request Recieved"})
             else:
-                return "Content Type not Supported"
+                return jsonify({"status":"Content Type not Supported"})
         elif (request.method == "PATCH"):
             content = request.headers.get('Content-Type')
             if(content == 'application/json'):
@@ -150,15 +148,15 @@ def tasks():
                 temp.completed = json['completed']
                 try:
                     db.session.commit()
-                    return "Successfully Modified in Database"
+                    return jsonify({"status":"Successfully Modified in Database"})
                 except:
                     db.session.rollback()
-                    return "Error in patching task to Database"
+                    return jsonify({"status":"Error in patching task to Database"})
                 finally:
                     db.session.close()
-                    return "Patch Request Recieved"
+                    return jsonify({"status":"Patch Request Recieved"})
             else:
-                return "Content Type not Supported"
+                return jsonify({"status":"Content Type not Supported"})
         elif (request.method == "DELETE"):
             content = request.headers.get('Content-Type')
             if(content == 'application/json'):
@@ -171,15 +169,15 @@ def tasks():
                 db.session.delete(temp)
                 try:
                     db.session.commit()
-                    return "Successfully Deleted from Database"
+                    return jsonify({"status":"Successfully Deleted from Database"})
                 except:
                     db.session.rollback()
-                    return "Error in Deleting task to Database"
+                    return jsonify({"status":"Error in Deleting task to Database"})
                 finally:
                     db.session.close()
-                    return "Delete Request Recieved"
+                    return jsonify({"status": "Delete Request Recieved"})
             else:
-                return "Content Type not Supported"
+                return jsonify({"status": "Content Type not Supported"})
     except:
         return jsonify({'status' : 'Token Expired'})
 
