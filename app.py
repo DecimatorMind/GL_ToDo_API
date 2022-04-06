@@ -20,11 +20,24 @@ class Users(db.Model):
 
 class Tasks(db.Model):
     id = db.Column(db.Integer,primary_key = True)
-    task = db.Column(db.String,nullable = False)
+    title = db.Column(db.String,nullable = False)
+    description = db.Column(db.String,nullable = False)
     user_id = db.Column(db.Integer,nullable = False)
     completed = db.Column(db.Boolean)
+    initial_date = db.Column(db.Date,nullable = False)
+    last_date = db.Column(db.Date)
+    user_order = db.Column(db.Integer,nullable = False)
+    last_update = db.Column(db.Date,nullable = False)
+
 
 db.create_all()
+
+def getUserOrder(userId):
+    tasks = Tasks.query.filter_by(user_id = userId)
+    order = 0
+    for i in tasks:
+        order += 1
+    return order
 
 # task = Tasks(id = 1,task = "Test Task",user_id = 1,completed = False)
 # db.session.add(task)
@@ -121,7 +134,9 @@ def tasks():
                 json = request.get_json()
                 if(json['user_id'] != userId):
                     return make_response(jsonify({'error' : 'Access Not Allowed'}),401)
-                task = Tasks(task = json['task'],user_id = json['user_id'],completed = json['completed'])
+                user_order = getUserOrder(userId)
+                date_today = datetime.date.today()
+                task = Tasks(title = json['title'],description = json['description'],user_id = json['user_id'],completed = json['completed'],initial_date = date_today,last_date = date_today+datetime.timedelta(days=json["number_of_days"]),user_order = user_order,last_update = date_today)
                 db.session.add(task)
                 try:
                     db.session.commit()
@@ -143,8 +158,11 @@ def tasks():
                 user = json['user_id']
                 taskid = json['id']
                 temp = Tasks.query.filter_by(user_id = user).filter_by(id = taskid).first()
-                temp.task = json['task']
+                temp.title = json['title']
+                temp.description = json['description']
                 temp.completed = json['completed']
+                temp.last_date = temp.initial_date + datetime.timedelta(days=json["number_of_days"])
+                temp.last_update = datetime.date.today()
                 try:
                     db.session.commit()
                     return make_response(jsonify({"status":"Successfully Modified in Database"}),200)
