@@ -1,13 +1,14 @@
 from enum import unique
 import datetime
-from flask import Flask,jsonify,request
+import json
+from flask import Flask,jsonify,request,make_response
 from flask_sqlalchemy import SQLAlchemy
 import jwt
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-secret_key = "GlueLabs"
-# secret_key = "your-256-bit-secret"
 
+secret_key = "GlueLabs"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234567@localhost/ToDoAPI_GL'
 db = SQLAlchemy(app)
 
@@ -51,17 +52,18 @@ def home():
 @app.route("/register",methods = ["POST"])
 def register():
     data = request.get_json()
-    new_user = Users(name = data["name"],email = data["email"],password = data["password"])
+    password = generate_password_hash(data["password"])
+    new_user = Users(name = data["name"],email = data["email"],password = password)
     db.session.add(new_user)
     try:
         db.session.commit()
-        return jsonify({"status":"Successfully Added to Database"})
+        return make_response(jsonify({"status" : "Successfully Added to Database"}),201)
     except:
         db.session.rollback()
-        return jsonify({"error":"Error in adding task to Database"})
+        return make_response(jsonify({"error":"Error in adding task to Database"}),400)
     finally:
         db.session.close()
-        return jsonify({"status":"Request Recieved"})
+        return make_response(jsonify({"status":"Request Recieved"}),200)
 
 @app.route('/check',methods = ["POST"])
 def check():
@@ -84,63 +86,60 @@ def login():
     email = data['email']
     password = data['password']
     if data == None or email == None or password == None:
-        return jsonify({'status' : 'Data not complete'})
+        return make_response(jsonify({'status' : 'Data not complete'}),400)
     user = Users.query.filter_by(email = email).first()
     if(user != None):
-        if(user.password == password):
+        if check_password_hash(user.password, password):
             token = jwt.encode({'public_id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
-            return jsonify({'token' : token})
+            return make_response(jsonify({'token' : token}),200)
         else:
-            return jsonify({'status': 'Wrong password entered'})
+            return make_response(jsonify({'status': 'Wrong password entered'}),400)
     else:
-        return jsonify({'status' : 'No such user exists'})
-
-# def getUser():
-
+        return make_response(jsonify({'status' : 'No such user exists'}),400)
 
 @app.route('/tasks',methods = ["GET","POST","PATCH","DELETE"])
 def tasks():
     token = request.headers.get("Authorization").split(" ")
     token = token[1]
     if(token == None):
-        return jsonify({'status' : 'Invalid Token'})
+        return make_response(jsonify({'status' : 'Invalid Token'}),400)
     try:
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         userId = payload['public_id']
         if(request.method == "GET"):
             tasks = Tasks.query.filter_by(user_id = userId)
             if(tasks == None):
-                return jsonify({'status': 'No Task Found'})
+                return make_response(jsonify({'status': 'No Task Found'}),200)
             else:
                 result = {}
                 for i in tasks:
                     result[i.id] = i.task
-                return jsonify(result)
+                return make_response(jsonify(result),200)
         elif (request.method == "POST"):
             content = request.headers.get('Content-Type')
             if(content == 'application/json'):
                 json = request.get_json()
                 if(json['user_id'] != userId):
-                    return jsonify({'error' : 'Access Not Allowed'})
+                    return make_response(jsonify({'error' : 'Access Not Allowed'}),401)
                 task = Tasks(task = json['task'],user_id = json['user_id'],completed = json['completed'])
                 db.session.add(task)
                 try:
                     db.session.commit()
-                    return jsonify({"status":"Successfully Added to Database"})
+                    return make_response(jsonify({"status":"Successfully Added to Database"}),200)
                 except:
                     db.session.rollback()
-                    return jsonify({"status":"Error in adding task to Database"})
+                    return make_response(jsonify({"status":"Error in adding task to Database"}),400)
                 finally:
                     db.session.close()
-                    return jsonify({"status":"Request Recieved"})
+                    return make_response(jsonify({"status":"Request Recieved"}),200)
             else:
-                return jsonify({"status":"Content Type not Supported"})
+                return make_response(jsonify({"status":"Content Type not Supported"}),200)
         elif (request.method == "PATCH"):
             content = request.headers.get('Content-Type')
             if(content == 'application/json'):
                 json = request.get_json()
                 if(json['user_id'] != userId):
-                    return jsonify({'error' : 'Access Not Allowed'})
+                    return make_response(jsonify({'error' : 'Access Not Allowed'}),401)
                 user = json['user_id']
                 taskid = json['id']
                 temp = Tasks.query.filter_by(user_id = user).filter_by(id = taskid).first()
@@ -148,38 +147,38 @@ def tasks():
                 temp.completed = json['completed']
                 try:
                     db.session.commit()
-                    return jsonify({"status":"Successfully Modified in Database"})
+                    return make_response(jsonify({"status":"Successfully Modified in Database"}),200)
                 except:
                     db.session.rollback()
-                    return jsonify({"status":"Error in patching task to Database"})
+                    return make_response(jsonify({"status":"Error in patching task to Database"}),400)
                 finally:
                     db.session.close()
-                    return jsonify({"status":"Patch Request Recieved"})
+                    return make_response(jsonify({"status":"Patch Request Recieved"}),200)
             else:
-                return jsonify({"status":"Content Type not Supported"})
+                return make_response(jsonify({"status":"Content Type not Supported"}),200)
         elif (request.method == "DELETE"):
             content = request.headers.get('Content-Type')
             if(content == 'application/json'):
                 json = request.get_json()
                 if(json['user_id'] != userId):
-                    return jsonify({'error' : 'Access Not Allowed'})
+                    return make_response(jsonify({'error' : 'Access Not Allowed'}),401)
                 user = json['user_id']
                 taskid = json['id']
                 temp = Tasks.query.filter_by(user_id = user).filter_by(id = taskid).first()
                 db.session.delete(temp)
                 try:
                     db.session.commit()
-                    return jsonify({"status":"Successfully Deleted from Database"})
+                    return make_response(jsonify({"status":"Successfully Deleted from Database"}),200)
                 except:
                     db.session.rollback()
-                    return jsonify({"status":"Error in Deleting task to Database"})
+                    return make_response(jsonify({"status":"Error in Deleting task to Database"}),400)
                 finally:
                     db.session.close()
-                    return jsonify({"status": "Delete Request Recieved"})
+                    return make_response(jsonify({"status": "Delete Request Recieved"}),200)
             else:
-                return jsonify({"status": "Content Type not Supported"})
+                return make_response(jsonify({"status": "Content Type not Supported"}),200)
     except:
-        return jsonify({'status' : 'Token Expired'})
+        return make_response(jsonify({'status' : 'Token Expired'}),400)
 
 if __name__ == "__main__":
     app.run()
