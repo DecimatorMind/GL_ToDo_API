@@ -28,6 +28,7 @@ class Tasks(db.Model):
     last_date = db.Column(db.Date)
     user_order = db.Column(db.Integer,nullable = False)
     last_update = db.Column(db.Date,nullable = False)
+    deleted = db.Column(db.Boolean,nullable = False)
 
 
 db.create_all()
@@ -136,7 +137,7 @@ def tasks():
                     return make_response(jsonify({'error' : 'Access Not Allowed'}),401)
                 user_order = getUserOrder(userId)
                 date_today = datetime.date.today()
-                task = Tasks(title = json['title'],description = json['description'],user_id = json['user_id'],completed = json['completed'],initial_date = date_today,last_date = date_today+datetime.timedelta(days=json["number_of_days"]),user_order = user_order,last_update = date_today)
+                task = Tasks(title = json['title'],description = json['description'],user_id = json['user_id'],completed = json['completed'],initial_date = date_today,last_date = date_today+datetime.timedelta(days=json["number_of_days"]),user_order = user_order,last_update = date_today,deleted = False)
                 db.session.add(task)
                 try:
                     db.session.commit()
@@ -183,7 +184,7 @@ def tasks():
                 user = json['user_id']
                 taskid = json['id']
                 temp = Tasks.query.filter_by(user_id = user).filter_by(id = taskid).first()
-                db.session.delete(temp)
+                temp.deleted = True
                 try:
                     db.session.commit()
                     return make_response(jsonify({"status":"Successfully Deleted from Database"}),200)
