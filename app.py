@@ -127,7 +127,8 @@ def tasks():
             else:
                 result = {}
                 for i in tasks:
-                    result[i.id] = i.task
+                    if(i.deleted == False):
+                        result[i.id] = {"title":i.title,"description": i.description,"user_id":i.user_id,"completed":i.completed,"last_date":i.last_date,"last_update":i.last_update,"user_order": i.user_order}
                 return make_response(jsonify(result),200)
         elif (request.method == "POST"):
             content = request.headers.get('Content-Type')
@@ -196,6 +197,29 @@ def tasks():
                     return make_response(jsonify({"status": "Delete Request Recieved"}),200)
             else:
                 return make_response(jsonify({"status": "Content Type not Supported"}),200)
+    except:
+        return make_response(jsonify({'status' : 'Token Expired'}),400)
+
+@app.route("/daywise",methods = ["GET"])
+def daywiseTasks():
+    token = request.headers.get("Authorization").split(" ")
+    token = token[1]
+    if(token == None):
+        return make_response(jsonify({'status' : 'Invalid Token'}),400)
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+        userId = payload['public_id']
+        if(request.method == "GET"):
+            date_today = datetime.date.today()
+            tasks = Tasks.query.filter_by(user_id = userId)
+            if(tasks == None):
+                return make_response(jsonify({'status': 'No Task Found'}),200)
+            else:
+                result = {}
+                for i in tasks:
+                    if(date_today == i.last_date and i.deleted == False):
+                        result[i.id] = {"title":i.title,"description": i.description,"user_id":i.user_id,"completed":i.completed,"last_date":i.last_date,"last_update":i.last_update,"user_order": i.user_order}
+                return make_response(jsonify(result),200)
     except:
         return make_response(jsonify({'status' : 'Token Expired'}),400)
 
