@@ -1,11 +1,12 @@
-from enum import unique
 import datetime
-import json
 from flask import Flask,jsonify,request,make_response
 from flask_sqlalchemy import SQLAlchemy
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudinary.uploader
+from flask_migrate import Migrate
+from models.users import Users
+from models.tasks import Tasks
 
 app = Flask(__name__)
 
@@ -13,26 +14,9 @@ app = Flask(__name__)
 
 secret_key = "GlueLabs"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234567@localhost/ToDoAPI_GL'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
-class Users(db.Model):
-    id = db.Column(db.Integer,primary_key = True)
-    name = db.Column(db.String)
-    email = db.Column(db.String,unique = True)
-    password = db.Column(db.String)
-
-class Tasks(db.Model):
-    id = db.Column(db.Integer,primary_key = True)
-    title = db.Column(db.String,nullable = False)
-    description = db.Column(db.String,nullable = False)
-    user_id = db.Column(db.Integer,nullable = False)
-    completed = db.Column(db.Boolean)
-    initial_date = db.Column(db.Date,nullable = False)
-    last_date = db.Column(db.Date)
-    user_order = db.Column(db.Integer,nullable = False)
-    last_update = db.Column(db.Date,nullable = False)
-    deleted = db.Column(db.Date,nullable = True)
-
+migrate = Migrate(app, db)
 
 db.create_all()
 
