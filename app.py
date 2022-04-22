@@ -16,9 +16,9 @@ secret_key = "GlueLabs"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234567@localhost/ToDoAPI_GL'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+# migrate = Migrate(app, db)
 
-db.create_all()
+# db.create_all()
 
 def getUserOrder(userId):
     tasks = Tasks.query.filter_by(user_id = userId)
@@ -122,7 +122,7 @@ def tasks():
             else:
                 result = {}
                 for i in tasks:
-                    if(i.deleted == False):
+                    if(i.deleted == None):
                         result[i.id] = {"title":i.title,"description": i.description,"user_id":i.user_id,"completed":i.completed,"last_date":i.last_date,"last_update":i.last_update,"user_order": i.user_order}
                 return make_response(jsonify(result),200)
         elif (request.method == "POST"):
@@ -214,7 +214,7 @@ def daywiseTasks():
             else:
                 result = {}
                 for i in tasks:
-                    if(date_today == i.last_date and i.deleted == False):
+                    if(date_today == i.last_date and i.deleted == None):
                         result[i.id] = {"title":i.title,"description": i.description,"user_id":i.user_id,"completed":i.completed,"last_date":i.last_date,"last_update":i.last_update,"user_order": i.user_order}
                 return make_response(jsonify(result),200)
     except:
