@@ -3,7 +3,11 @@ from flask import request, make_response, jsonify
 from models.users import Users as DbUser
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudinary.uploader
+import jwt
+import datetime
 
+
+secret_key = "GlueLabs"
 cloudinary.config(
   cloud_name = "dxr7lcjmd",
   api_key = "643921477167134",
@@ -24,3 +28,14 @@ class Users(Resource):
         except:
             return make_response(jsonify({"error":"Error in adding User to Database"}),400)
         return {"message": "User created successfully."}, 200
+
+class User_Login(Resource):
+    def post(self):
+        user_email = request.form.get('user_email')
+        user_password = request.form.get('user_password')
+        returned_user = DbUser.find_by_user_email(user_email)
+        if(check_password_hash(returned_user.password, user_password)):
+            token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
+            return make_response(jsonify({'token' : token}),200)
+        else:
+            return make_response(jsonify({'status': 'Wrong password entered'}),400)

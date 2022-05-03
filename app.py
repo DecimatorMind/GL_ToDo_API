@@ -1,11 +1,10 @@
-import datetime
 from flask import Flask,jsonify,request,make_response
 from flask_sqlalchemy import SQLAlchemy
 import jwt
 from flask_restful import Api
 from models.users import Users
 from models.tasks import Tasks
-from resources.users import Users
+from resources.users import User_Login, Users
 
 app = Flask(__name__)
 api = Api(app)
@@ -18,6 +17,7 @@ db = SQLAlchemy(app)
 
 
 api.add_resource(Users,'/register')
+api.add_resource(User_Login,'/login')
 
 def getUserOrder(userId):
     tasks = Tasks.query.filter_by(user_id = userId)
@@ -29,38 +29,6 @@ def getUserOrder(userId):
 @app.route("/")
 def home():
     return jsonify({"status":"OK"})
-
-@app.route('/check',methods = ["POST"])
-def check():
-    token = request.headers.get("Authorization").split(" ")
-    token = token[1]
-    if(token == None):
-        return jsonify({'status' : 'Invalid Token'})
-    try:
-        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
-        print(payload)
-        return jsonify({"check":"Successful"})
-    except jwt.exceptions.ExpiredSignatureError:
-        return jsonify({"error" : "Token Expired"})
-    except:
-        return jsonify({'status' : 'Unkown Error'})
-
-@app.route('/login',methods = ["POST"])
-def login():
-    data = request.get_json()
-    email = data['email']
-    password = data['password']
-    if data == None or email == None or password == None:
-        return make_response(jsonify({'status' : 'Data not complete'}),400)
-    user = Users.query.filter_by(email = email).first()
-    if(user != None):
-        if check_password_hash(user.password, password):
-            token = jwt.encode({'public_id' : user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
-            return make_response(jsonify({'token' : token}),200)
-        else:
-            return make_response(jsonify({'status': 'Wrong password entered'}),400)
-    else:
-        return make_response(jsonify({'status' : 'No such user exists'}),400)
 
 @app.route('/tasks',methods = ["GET","POST","PATCH","DELETE"])
 def tasks():

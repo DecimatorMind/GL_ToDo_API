@@ -19,6 +19,10 @@ class Users(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    @classmethod
+    def find_by_user_email(cls,user_email):
+        return(cls.query.filter_by(email = user_email).first())
+
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
