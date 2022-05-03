@@ -2,23 +2,22 @@ import datetime
 from flask import Flask,jsonify,request,make_response
 from flask_sqlalchemy import SQLAlchemy
 import jwt
-from werkzeug.security import generate_password_hash, check_password_hash
-import cloudinary.uploader
-from flask_migrate import Migrate
+from flask_restful import Api
 from models.users import Users
 from models.tasks import Tasks
+from resources.users import Users
 
 app = Flask(__name__)
-
+api = Api(app)
 # yorec77612@bamibi.com
 
 secret_key = "GlueLabs"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234567@localhost/ToDoAPI_GL'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
 
-# db.create_all()
+
+api.add_resource(Users,'/register')
 
 def getUserOrder(userId):
     tasks = Tasks.query.filter_by(user_id = userId)
@@ -27,52 +26,9 @@ def getUserOrder(userId):
         order += 1
     return order
 
-cloudinary.config(
-  cloud_name = "dxr7lcjmd",
-  api_key = "643921477167134",
-  api_secret = "z9WyxtR6Io6ACEQsA_yylzxfk68")
-
-# task = Tasks(id = 1,task = "Test Task",user_id = 1,completed = False)
-# db.session.add(task)
-# try:
-#     db.session.commit()
-# except:
-#     db.session.rollback()
-# finally:
-#     db.session.close()
-
-# sample_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwdWJsaWNfaWQiOjEsImV4cCI6MTY0ODkwOTM2N30.PW8KrXIdFrUblLN4X_OhleyRuVK7uc-81rZrjc1yUd0'
-# user = Users(id = 1,name = 'Test Name',email = 'Test Email',password = 'Password',token = sample_token)
-# db.session.add(user)
-# try:
-#     db.session.commit()
-# except:
-#     db.session.rollback()
-# finally:
-#     db.session.close()
-
 @app.route("/")
 def home():
     return jsonify({"status":"OK"})
-
-@app.route("/register",methods = ["POST"])
-def register():
-    user_name = request.form.get('user_name')
-    user_email = request.form.get('user_email')
-    password = generate_password_hash(request.form.get('password'))
-    new_user = Users(name = user_name,email = user_email,password = password)
-    db.session.add(new_user)
-    try:
-        db.session.commit()
-        data = request.files["display_picture"]
-        cloudinary.uploader.upload(data,public_id = user_email)
-        return make_response(jsonify({"status" : "Successfully Added to Database"}),201)
-    except:
-        db.session.rollback()
-        return make_response(jsonify({"error":"Error in adding task to Database"}),400)
-    finally:
-        db.session.close()
-        return make_response(jsonify({"status":"Request Recieved"}),200)
 
 @app.route('/check',methods = ["POST"])
 def check():
