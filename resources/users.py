@@ -1,4 +1,4 @@
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
 from flask import request, make_response, jsonify
 from models.users import Users as DbUser
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -36,6 +36,6 @@ class User_Login(Resource):
         returned_user = DbUser.find_by_user_email(user_email)
         if(check_password_hash(returned_user.password, user_password)):
             token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
-            return make_response(jsonify({'token' : token}),200)
+            return make_response(jsonify({'token': token}), 201)
         else:
             return make_response(jsonify({'status': 'Wrong password entered'}),400)

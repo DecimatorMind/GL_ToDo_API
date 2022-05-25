@@ -24,3 +24,7 @@ class Tasks(db.Model):
         self.user_order = user_order
         self.last_update = last_update
         self.deleted = deleted
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
