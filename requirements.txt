@@ -52,7 +52,7 @@ prometheus-client==0.14.1
 prometheus-flask-exporter==0.20.1
 protobuf==3.20.1
 pycparser==2.21
-PyJWT==1.4.2
+PyJWT==1.7.0
 pymp==0.0.3
 pymp-pypi==0.5.0
 pyOpenSSL==22.0.0
