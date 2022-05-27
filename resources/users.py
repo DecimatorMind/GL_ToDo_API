@@ -25,6 +25,7 @@ class Users(Resource):
             new_user.save_to_db()
             data = request.files["display_picture"]
             cloudinary.uploader.upload(data,public_id = user_email)
+            return {"message": "User created successfully."}, 200
         except:
             return make_response(jsonify({"error":"Error in adding User to Database"}),400)
         return {"message": "User created successfully."}, 200
