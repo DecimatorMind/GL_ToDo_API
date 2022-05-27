@@ -33,7 +33,7 @@ class User_Login(Resource):
     def post(self):
         user_email = request.form.get('user_email')
         user_password = request.form.get('user_password')
-        returned_user = DbUser.find_by_username(user_email)
+        returned_user = DbUser.find_by_user_email(user_email)
         return jsonify({"status":returned_user.password})
         # if(check_password_hash(returned_user.password, user_password)):
         #     token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
