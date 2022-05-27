@@ -39,3 +39,7 @@ class User_Login(Resource):
             return make_response(jsonify({'token': token}), 201)
         else:
             return make_response(jsonify({'status': 'Wrong password entered'}),400)
+
+class Login_Check(Resource):
+    def get(self):
+        return jsonify({"status":"Login method reached"})
