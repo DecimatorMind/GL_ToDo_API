@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
+
 class Users(db.Model):
     id = db.Column(db.Integer,primary_key = True)
     name = db.Column(db.String)
@@ -21,7 +22,7 @@ class Users(db.Model):
 
     @classmethod
     def find_by_user_email(cls,user_email):
-        return(cls.query.filter_by(email = user_email).first())
+        return cls.query.filter_by(email = user_email).first()
 
     def delete_from_db(self):
         db.session.delete(self)
