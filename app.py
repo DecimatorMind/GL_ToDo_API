@@ -13,13 +13,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 api.add_resource(Users,'/register')
-api.add_resource(User_Login,'/login')
+# api.add_resource(User_Login,'/login')
 api.add_resource(Tasks,'/tasks')
 api.add_resource(Daywise,'/daywise')
 
 @app.route("/")
 def home():
     return jsonify({"status":"OK"})
+
+@app.route("/login")
+def login():
+    return "Login"
 
 if __name__ == "__main__":
     app.run()
