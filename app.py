@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from resources.users import User_Login, Users
 from resources.tasks import Tasks, Daywise
-from collections.abc import Mapping
 
 app = Flask(__name__)
 api = Api(app)

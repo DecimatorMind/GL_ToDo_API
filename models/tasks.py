@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from collections.abc import Mapping
 
 db = SQLAlchemy()
 

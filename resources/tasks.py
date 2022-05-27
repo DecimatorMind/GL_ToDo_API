@@ -3,7 +3,6 @@ from flask_restful import Resource, reqparse
 from flask import request, make_response, jsonify
 from models.tasks import Tasks as DbTasks
 from models.users import Users
-from collections.abc import Mapping
 import jwt
 import datetime
 
