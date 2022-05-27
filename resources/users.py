@@ -28,14 +28,15 @@ class Users(Resource):
             return make_response(jsonify({"message":"User created successfully."}),200)
         except:
             return make_response(jsonify({"error":"Error in adding User to Database"}),400)
-        # return {"message": "User created successfully."}, 200
+
 class User_Login(Resource):
     def post(self):
         user_email = request.form.get('user_email')
         user_password = request.form.get('user_password')
-        returned_user = DbUser.find_by_user_email(user_email)
-        if(check_password_hash(returned_user.password, user_password)):
-            token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
-            return make_response(jsonify({'token': token}), 201)
-        else:
-            return make_response(jsonify({'status': 'Wrong password entered'}),400)
+        returned_user = DbUser.query.filter_by(email = user_email).first()
+        return make_response(jsonify({"message":returned_user}),200)
+        # if(check_password_hash(returned_user.password, user_password)):
+        #     token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
+        #     return make_response(jsonify({'token': token}), 201)
+        # else:
+        #     return make_response(jsonify({'status': 'Wrong password entered'}),400)
