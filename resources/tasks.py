@@ -55,9 +55,10 @@ class Tasks(Resource):
             return make_response(jsonify(result),200)
 
     def post(self):
-        curr_user = check_token()
+        # curr_user = check_token()
         json = request.get_json()
-        curr_user_id = curr_user.id
+        # curr_user_id = curr_user.id
+        curr_user_id = 1
         if(json['user_id'] != curr_user_id):
             return make_response(jsonify({'error' : 'Access Not Allowed'}),401)
         user_order = getUserOrder(curr_user_id)
