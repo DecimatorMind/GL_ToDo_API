@@ -1,7 +1,7 @@
 from flask import Flask,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
-from resources.users import User_Login, Users, Login_Check
+from resources.users import User_Login, Users
 from resources.tasks import Tasks, Daywise
 
 app = Flask(__name__)
