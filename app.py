@@ -23,7 +23,7 @@ def home():
 
 @app.route("/login")
 def login():
-    return "Login"
+    return jsonify({"status":"Login method reached"})
 
 if __name__ == "__main__":
     app.run()
