@@ -23,8 +23,8 @@ class Users(Resource):
             return {"message": 'A user with username {} already exists.'.format(user_name)}, 400
         try:
             new_user.save_to_db()
-            data = request.files["display_picture"]
-            cloudinary.uploader.upload(data,public_id = user_email)
+            # data = request.files["display_picture"]
+            # cloudinary.uploader.upload(data,public_id = user_email)
             return make_response(jsonify({"message":"User created successfully."}),200)
         except:
             return make_response(jsonify({"error":"Error in adding User to Database"}),400)
