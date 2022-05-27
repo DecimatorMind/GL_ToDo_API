@@ -4,6 +4,7 @@ from models.users import Users as DbUser
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudinary.uploader
 import jwt
+from collections.abc import Mapping
 import datetime
 
 

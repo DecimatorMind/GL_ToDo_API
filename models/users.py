@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from collections.abc import Mapping
 db = SQLAlchemy()
 class Users(db.Model):
     id = db.Column(db.Integer,primary_key = True)
