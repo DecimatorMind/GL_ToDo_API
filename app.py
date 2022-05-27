@@ -14,7 +14,6 @@ db = SQLAlchemy(app)
 
 api.add_resource(Users,'/register')
 api.add_resource(User_Login,'/login')
-api.add_resource(Login_Check,'/login_check')
 api.add_resource(Tasks,'/tasks')
 api.add_resource(Daywise,'/daywise')
 
