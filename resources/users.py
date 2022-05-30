@@ -35,8 +35,11 @@ class User_Login(Resource):
         user_password = request.form.get('user_password')
         returned_user = DbUser.find_by_username(user_email)
         if(check_password_hash(returned_user.password, user_password)):
-            return make_response(jsonify({"status" : returned_user.email}))
-            # token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
+            try:
+                token = jwt.encode({'public_id' : returned_user.id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60)}, secret_key, "HS256")
+                return make_response(jsonify({"status": "Token Generation Succesfull"}))
+            except:
+                return make_response(jsonify({"status" : returned_user.email}))
             # return make_response(jsonify({'token': str(token)}), 201)
         # else:
             # return make_response(jsonify({'status': 'Wrong password entered'}),400)
